@@ -1,4 +1,4 @@
-const SERVER_URL = "https://yirtimd-easyrag-8bbc.twc1.net";; // Change to Railway URL after deploy
+const SERVER_URL = "https://yirtimd-easyrag-8bbc.twc1.net"; // Change to Railway URL after deploy
 
 // --- Storage ---
 async function getSettings() {
