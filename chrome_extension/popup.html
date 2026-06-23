@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>/easyRAG</title>
+<style>
+:root {
+  --page: #0b0f14;
+  --shell: #0f141b;
+  --panel: #151b24;
+  --panel-2: #111720;
+  --panel-3: #1a222d;
+  --line: #273241;
+  --line-2: #334155;
+  --text: #eef2f7;
+  --muted: #9aa7b7;
+  --faint: #6f7d8e;
+  --blue: #38bdf8;
+  --green: #22c55e;
+  --green-soft: rgba(34,197,94,0.12);
+  --red: #f87171;
+  --red-soft: rgba(248,113,113,0.12);
+  --amber: #f59e0b;
+  --amber-soft: rgba(245,158,11,0.12);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  width: 360px; height: 580px; overflow: hidden;
+  background: var(--shell);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 12.6px; color: var(--text); letter-spacing: 0;
+}
+.popup { width: 360px; height: 580px; overflow: hidden; display: flex; flex-direction: column; background: var(--shell); }
+
+/* Topbar */
+.topbar { height: 58px; display: flex; align-items: center; gap: 10px; padding: 0 13px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+.mark { width: 32px; height: 32px; display: grid; place-items: center; background: #111c27; border: 1px solid #1e3a4d; border-radius: 8px; flex-shrink: 0; color: var(--blue); }
+.topbar-title { flex: 1; min-width: 0; }
+.topbar-title h1 { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1; }
+.subtitle { font-size: 11.4px; color: var(--muted); margin-top: 2px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px var(--green-soft); flex-shrink: 0; }
+
+/* Tabs */
+.tabs { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; padding: 10px 13px; background: var(--shell); border-bottom: 1px solid var(--line); flex-shrink: 0; }
+.tab { height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: color 130ms ease, border-color 130ms ease, background 130ms ease; }
+.tab:hover { color: var(--text); background: var(--panel); border-color: var(--line); }
+.tab.active { color: var(--text); background: var(--panel); border-color: var(--line-2); }
+.tab.active svg { color: var(--blue); }
+
+/* Content */
+.content { flex: 1; overflow: hidden; }
+.panel { display: none; height: 100%; overflow-y: auto; padding: 12px 13px 13px; flex-direction: column; gap: 8px; }
+.panel.active { display: flex; }
+
+/* Cards */
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; }
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.card-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.tag { font-size: 10.4px; font-weight: 600; color: var(--muted); background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 2px 6px; }
+
+/* Inputs */
+.input-shell { height: 37px; display: flex; align-items: center; gap: 8px; padding: 0 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; transition: border-color 130ms ease, box-shadow 130ms ease; }
+.input-shell:focus-within { border-color: rgba(56,189,248,0.72); box-shadow: 0 0 0 3px rgba(56,189,248,0.1); }
+.input-shell svg { color: var(--faint); flex-shrink: 0; }
+.input-shell input { flex: 1; background: transparent; border: none; outline: none; color: var(--text); font-size: 12.6px; font-family: inherit; min-width: 0; }
+.input-shell input::placeholder { color: var(--faint); }
+textarea.field { width: 100%; min-height: 88px; max-height: 88px; resize: none; padding: 10px; line-height: 1.42; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; color: var(--text); font-size: 12.6px; font-family: inherit; outline: none; transition: border-color 130ms ease, box-shadow 130ms ease; }
+textarea.field:focus { border-color: rgba(56,189,248,0.72); box-shadow: 0 0 0 3px rgba(56,189,248,0.1); }
+textarea.field::placeholder { color: var(--faint); }
+
+/* Buttons */
+button { cursor: pointer; font-family: inherit; }
+.btn-primary { height: 37px; width: 100%; color: #041016; background: var(--blue); border: none; border-radius: 8px; font-size: 12.8px; font-weight: 700; transition: background 130ms ease, transform 120ms ease; }
+.btn-primary:hover { background: #7dd3fc; }
+.btn-primary:active { transform: translateY(1px); }
+.btn-primary:disabled { background: #1e4a6a; color: var(--faint); cursor: not-allowed; }
+.btn-secondary { height: 37px; color: var(--text); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; font-size: 12.8px; font-weight: 600; transition: background 130ms ease, border-color 130ms ease, transform 120ms ease; }
+.btn-secondary:hover { border-color: var(--line-2); background: var(--panel-3); }
+.btn-secondary:active { transform: translateY(1px); }
+.icon-button { width: 33px; height: 33px; display: grid; place-items: center; color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; flex-shrink: 0; transition: color 130ms ease, border-color 130ms ease, background 130ms ease; }
+.icon-button:hover { color: var(--text); border-color: var(--line-2); background: var(--panel-3); }
+
+/* Status */
+.status-row { display: none; align-items: center; gap: 7px; padding: 7px 10px; border-radius: 7px; font-size: 11.5px; font-weight: 500; margin-top: 7px; }
+.status-row.visible { display: flex; }
+.status-row.success { color: #bbf7d0; background: var(--green-soft); }
+.status-row.loading { color: #bae6fd; background: rgba(56,189,248,0.10); }
+.status-row.error { color: #fecaca; background: var(--red-soft); }
+.status-row.warning { color: #fde68a; background: var(--amber-soft); }
+
+/* File row */
+.file-row { display: flex; align-items: center; gap: 10px; padding: 9px 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: border-color 130ms ease; }
+.file-row:hover { border-color: var(--line-2); }
+.file-info { flex: 1; min-width: 0; }
+.file-name { font-size: 12.4px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-meta { font-size: 10.8px; color: var(--muted); margin-top: 1px; }
+.file-row > svg { color: var(--faint); flex-shrink: 0; }
+
+/* Button row */
+.btn-row { display: flex; gap: 7px; margin-top: 8px; }
+.btn-row .btn-primary { flex: 1; }
+
+/* Utility row */
+.utility-row { display: flex; align-items: center; gap: 8px; padding: 9px 2px; color: var(--faint); font-size: 11.5px; }
+.utility-row span { flex: 1; }
+
+/* Chat */
+.chat-context-card { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; flex-shrink: 0; }
+.chat-context-left h2 { font-size: 13px; font-weight: 700; color: var(--text); }
+.chat-context-left p { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.src-chip-small { font-size: 11px; color: var(--blue); background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); border-radius: 6px; padding: 3px 8px; white-space: nowrap; }
+.chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 4px 0; }
+.msg-user-wrap { display: flex; justify-content: flex-end; }
+.msg-rag-wrap { display: flex; justify-content: flex-start; }
+.msg-label { font-size: 10.4px; color: var(--faint); margin-bottom: 3px; padding: 0 4px; }
+.msg-user-label { text-align: right; }
+.bubble-user { background: var(--blue); color: #041016; border-radius: 10px 10px 4px 10px; padding: 8px 11px; font-size: 12.6px; max-width: 80%; word-wrap: break-word; }
+.bubble-rag { background: var(--panel); border: 1px solid var(--line); color: var(--text); border-radius: 10px 10px 10px 4px; padding: 8px 11px; font-size: 12.6px; max-width: 85%; word-wrap: break-word; line-height: 1.5; }
+.chat-composer { display: flex; gap: 7px; flex-shrink: 0; padding-top: 8px; }
+.chat-composer .input-shell { flex: 1; }
+
+/* Key tab */
+.key-card-icon { width: 36px; height: 36px; display: grid; place-items: center; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; color: var(--blue); margin-bottom: 10px; }
+.key-card-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.key-card-desc { font-size: 11.3px; color: var(--muted); margin-bottom: 12px; line-height: 1.4; }
+.security-note { display: flex; align-items: flex-start; gap: 7px; padding: 8px 10px; background: var(--amber-soft); border: 1px solid rgba(245,158,11,0.2); border-radius: 7px; font-size: 11px; color: #fde68a; margin-top: 8px; line-height: 1.4; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }
+*:focus-visible { outline: 2px solid rgba(56,189,248,0.45); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="popup">
+
+  <header class="topbar">
+    <div class="mark">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+        <polyline points="2 17 12 22 22 17"/>
+        <polyline points="2 12 12 17 22 12"/>
+      </svg>
+    </div>
+    <div class="topbar-title">
+      <h1>/easyRAG</h1>
+      <div class="subtitle" id="headerSubtitle">local knowledge index</div>
+    </div>
+    <span class="status-dot"></span>
+    <button class="icon-button" id="exportBtn" type="button" aria-label="Export database">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+    </button>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="add" type="button">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Add
+    </button>
+    <button class="tab" data-tab="chat" type="button">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      Chat
+    </button>
+    <button class="tab" data-tab="settings" type="button">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      Key
+    </button>
+  </nav>
+
+  <main class="content">
+
+    <!-- Add -->
+    <section class="panel active" id="tab-add">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">PDF</span>
+          <span class="tag">ready</span>
+        </div>
+        <input type="file" id="pdfInput" accept=".pdf" style="display:none"/>
+        <label for="pdfInput" class="file-row">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <div class="file-info">
+            <div class="file-name" id="fileName">Choose a PDF file</div>
+            <div class="file-meta" id="fileMeta">Click to browse</div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </label>
+        <button class="btn-primary" id="pdfBtn" type="button">Index PDF</button>
+        <div class="status-row" id="pdfStatus"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Text</span>
+          <span class="tag">note</span>
+        </div>
+        <textarea class="field" id="textInput" placeholder="Paste note, article fragment, or selected text..."></textarea>
+        <div class="input-shell" style="margin-top:8px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+          <input type="text" id="sourceInput" placeholder="source-name"/>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" id="textBtn" type="button">Add text</button>
+          <button class="icon-button" id="clearTextBtn" type="button" aria-label="Clear" style="width:37px;height:37px;border-radius:8px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="status-row" id="textStatus"></div>
+      </div>
+
+      <div class="utility-row">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+          <polyline points="10 17 15 12 10 7"/>
+          <line x1="15" y1="12" x2="3" y2="12"/>
+        </svg>
+        <span>Selected text can be added via context menu</span>
+      </div>
+    </section>
+
+    <!-- Chat -->
+    <section class="panel" id="tab-chat">
+      <div class="chat-context-card">
+        <div class="chat-context-left">
+          <h2>Ask local index</h2>
+          <p>Answers use saved PDFs and notes</p>
+        </div>
+        <button class="icon-button" id="clearChatBtn" type="button" aria-label="Clear chat" style="width:28px;height:28px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>
+          </svg>
+        </button>
+        <div class="src-chip-small" id="srcCount">index ready</div>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-composer">
+        <div class="input-shell">
+          <input type="text" id="chatInput" placeholder="Ask your documents..."/>
+        </div>
+        <button class="icon-button" id="chatBtn" type="button" aria-label="Send" style="width:37px;height:37px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+      <div class="status-row" id="chatStatus"></div>
+    </section>
+
+    <!-- Key -->
+    <section class="panel" id="tab-settings">
+      <div class="card">
+        <div class="key-card-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <div class="key-card-title">API key</div>
+        <div class="key-card-desc">Stored locally in your browser. Used to access your personal index.</div>
+        <button class="btn-secondary" id="registerBtn" type="button" style="width:100%;margin-bottom:10px;">Get new key</button>
+        <div class="status-row" id="registerStatus"></div>
+        <div class="input-shell" style="margin-top:10px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <input type="password" id="apiKey" placeholder="sk-••••••••••••••••"/>
+          <button type="button" id="toggleKeyBtn" aria-label="Show key" style="background:transparent;border:none;color:var(--faint);display:grid;place-items:center;cursor:pointer;padding:0;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+        <button class="btn-primary" id="saveSettings" type="button" style="margin-top:8px;">Save key</button>
+        <div class="status-row" id="settingsStatus"></div>
+        <div class="security-note">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px;">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Do not paste this key into chat or share it publicly.
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+<script src="popup.js"></script>
+</body>
+</html>

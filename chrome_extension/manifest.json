@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "/easyRAG",
+  "version": "1.0",
+  "description": "Select text on the page and send it to your RAG system",
+  "icons": {
+  "16": "icons/rag_collector_icon_16.png",
+  "32": "icons/rag_collector_icon_32.png",
+  "48": "icons/rag_collector_icon_48.png",
+  "128": "icons/rag_collector_icon_128.png"
+},
+  "permissions": ["contextMenus", "storage", "activeTab"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "/easyRAG",
+    "default_icon": {
+      "16": "icons/rag_collector_icon_16.png",
+      "32": "icons/rag_collector_icon_32.png",
+      "48": "icons/rag_collector_icon_48.png",
+      "128": "icons/rag_collector_icon_128.png"
+  }
+  }
+}
